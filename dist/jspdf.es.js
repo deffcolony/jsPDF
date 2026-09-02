@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 4.2.1 Built on 2026-09-02T17:45:29.729Z
+ * Version 4.2.1 Built on 2026-09-02T20:12:30.196Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2025 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -80,7 +80,7 @@ function consoleError(str) {
     }
   }
 }
-var console = {
+var console$1 = {
   log: consoleLog,
   warn: consoleWarn,
   error: consoleError
@@ -90,7 +90,7 @@ function bom(blob, opts) {
   if (typeof opts === "undefined") opts = {
     autoBom: false
   };else if (_typeof(opts) !== "object") {
-    console.warn("Deprecated: Expected third argument to be a object");
+    console$1.warn("Deprecated: Expected third argument to be a object");
     opts = {
       autoBom: !opts
     };
@@ -113,7 +113,7 @@ function download(url, name, opts) {
     saveAs(xhr.response, name, opts);
   };
   xhr.onerror = function () {
-    console.error("could not download file");
+    console$1.error("could not download file");
   };
   xhr.send();
 }
@@ -921,7 +921,7 @@ function PubSub(context) {
           sub[0].apply(context, args);
         } catch (ex) {
           if (globalObject.console) {
-            console.error("jsPDF PubSub Error", ex.message, ex);
+            console$1.error("jsPDF PubSub Error", ex.message, ex);
           }
         }
         if (sub[1]) tokens.push(token);
@@ -3178,7 +3178,7 @@ function jsPDF(options) {
       height = format[1];
     }
     if (width > 14400 || height > 14400) {
-      console.warn("A page in a PDF can not be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400");
+      console$1.warn("A page in a PDF can not be wider or taller than 14400 userUnit. jsPDF limits the width/height to 14400");
       width = Math.min(14400, width);
       height = Math.min(14400, height);
     }
@@ -3259,7 +3259,7 @@ function jsPDF(options) {
       key = fontmap[fontName][fontStyle];
     } else {
       if (options.disableWarning === false) {
-        console.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
+        console$1.warn("Unable to look up font label for font '" + fontName + "', '" + fontStyle + "'. Refer to getFontList() for available fonts.");
       }
     }
     if (!key && !options.noFallback) {
@@ -3490,7 +3490,7 @@ function jsPDF(options) {
         if (typeof globalObject.URL !== "undefined" && typeof globalObject.URL.createObjectURL === "function") {
           return globalObject.URL && globalObject.URL.createObjectURL(getBlob(buildDocument())) || void 0;
         } else {
-          console.warn("bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.");
+          console$1.warn("bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser.");
         }
         break;
       case "datauristring":
@@ -11877,7 +11877,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.moveTo = function (x, y) {
     if (isNaN(x) || isNaN(y)) {
-      console.error("jsPDF.context2d.moveTo: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.moveTo: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.moveTo");
     }
     var pt = this.ctx.transform.applyToPoint(new Point(x, y));
@@ -11924,7 +11924,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.lineTo = function (x, y) {
     if (isNaN(x) || isNaN(y)) {
-      console.error("jsPDF.context2d.lineTo: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.lineTo: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.lineTo");
     }
     var pt = this.ctx.transform.applyToPoint(new Point(x, y));
@@ -11961,7 +11961,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.quadraticCurveTo = function (cpx, cpy, x, y) {
     if (isNaN(x) || isNaN(y) || isNaN(cpx) || isNaN(cpy)) {
-      console.error("jsPDF.context2d.quadraticCurveTo: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.quadraticCurveTo: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.quadraticCurveTo");
     }
     var pt0 = this.ctx.transform.applyToPoint(new Point(x, y));
@@ -11991,7 +11991,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.bezierCurveTo = function (cp1x, cp1y, cp2x, cp2y, x, y) {
     if (isNaN(x) || isNaN(y) || isNaN(cp1x) || isNaN(cp1y) || isNaN(cp2x) || isNaN(cp2y)) {
-      console.error("jsPDF.context2d.bezierCurveTo: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.bezierCurveTo: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo");
     }
     var pt0 = this.ctx.transform.applyToPoint(new Point(x, y));
@@ -12024,7 +12024,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.arc = function (x, y, radius, startAngle, endAngle, counterclockwise) {
     if (isNaN(x) || isNaN(y) || isNaN(radius) || isNaN(startAngle) || isNaN(endAngle)) {
-      console.error("jsPDF.context2d.arc: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.arc: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.arc");
     }
     counterclockwise = Boolean(counterclockwise);
@@ -12082,7 +12082,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.rect = function (x, y, w, h) {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-      console.error("jsPDF.context2d.rect: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.rect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.rect");
     }
     this.moveTo(x, y);
@@ -12107,7 +12107,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.fillRect = function (x, y, w, h) {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-      console.error("jsPDF.context2d.fillRect: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.fillRect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.fillRect");
     }
     if (isFillTransparent.call(this)) {
@@ -12146,7 +12146,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.strokeRect = function strokeRect(x, y, w, h) {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-      console.error("jsPDF.context2d.strokeRect: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.strokeRect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.strokeRect");
     }
     if (isStrokeTransparent.call(this)) {
@@ -12174,7 +12174,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.clearRect = function (x, y, w, h) {
     if (isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) {
-      console.error("jsPDF.context2d.clearRect: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.clearRect: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.clearRect");
     }
     if (this.ignoreClearRect) {
@@ -12359,7 +12359,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.fillText = function (text, x, y, maxWidth) {
     if (isNaN(x) || isNaN(y) || typeof text !== "string") {
-      console.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.fillText");
     }
     maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
@@ -12394,7 +12394,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.strokeText = function (text, x, y, maxWidth) {
     if (isNaN(x) || isNaN(y) || typeof text !== "string") {
-      console.error("jsPDF.context2d.strokeText: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.strokeText: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.strokeText");
     }
     if (isStrokeTransparent.call(this)) {
@@ -12426,7 +12426,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.measureText = function (text) {
     if (typeof text !== "string") {
-      console.error("jsPDF.context2d.measureText: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.measureText: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.measureText");
     }
     var pdf = this.pdf;
@@ -12462,7 +12462,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.scale = function (scalewidth, scaleheight) {
     if (isNaN(scalewidth) || isNaN(scaleheight)) {
-      console.error("jsPDF.context2d.scale: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.scale: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.scale");
     }
     var matrix = new Matrix(scalewidth, 0.0, 0.0, scaleheight, 0.0, 0.0);
@@ -12480,7 +12480,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.rotate = function (angle) {
     if (isNaN(angle)) {
-      console.error("jsPDF.context2d.rotate: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.rotate: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.rotate");
     }
     var matrix = new Matrix(Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0.0, 0.0);
@@ -12498,7 +12498,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.translate = function (x, y) {
     if (isNaN(x) || isNaN(y)) {
-      console.error("jsPDF.context2d.translate: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.translate: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.translate");
     }
     var matrix = new Matrix(1.0, 0.0, 0.0, 1.0, x, y);
@@ -12520,7 +12520,7 @@ function parseFontFamily(input) {
    */
   Context2D.prototype.transform = function (a, b, c, d, e, f) {
     if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d) || isNaN(e) || isNaN(f)) {
-      console.error("jsPDF.context2d.transform: Invalid arguments", arguments);
+      console$1.error("jsPDF.context2d.transform: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.transform");
     }
     var matrix = new Matrix(a, b, c, d, e, f);
@@ -15635,7 +15635,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
     var k = chase;
     var op_end = op + chase_length + (chase_code !== code ? 1 : 0);
     if (op_end > output_length) {
-      console.log("Warning, gif stream longer than expected.");
+      console$1.log("Warning, gif stream longer than expected.");
       return;
     }
 
@@ -15668,7 +15668,7 @@ function GifReaderLZWOutputIndexStream(code_stream, p, output, output_length) {
     prev_code = code;
   }
   if (op !== output_length) {
-    console.log("Warning, gif stream shorter than expected.");
+    console$1.log("Warning, gif stream shorter than expected.");
   }
   return output;
 }
@@ -16352,7 +16352,7 @@ BmpDecoder.prototype.parseBGR = function () {
   try {
     this[bitn]();
   } catch (e) {
-    console.log("bit decode error:" + e);
+    console$1.log("bit decode error:" + e);
   }
 };
 BmpDecoder.prototype.bit1 = function () {
@@ -21385,11 +21385,11 @@ WebPDecoder.prototype.getData = function () {
    */
   jsPDFAPI.addSvgAsImage = function (svg, x, y, w, h, alias, compression, rotation) {
     if (isNaN(x) || isNaN(y)) {
-      console.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
+      console$1.error("jsPDF.addSvgAsImage: Invalid coordinates", arguments);
       throw new Error("Invalid coordinates passed to jsPDF.addSvgAsImage");
     }
     if (isNaN(w) || isNaN(h)) {
-      console.error("jsPDF.addSvgAsImage: Invalid measurements", arguments);
+      console$1.error("jsPDF.addSvgAsImage: Invalid measurements", arguments);
       throw new Error("Invalid measurements (width and/or height) passed to jsPDF.addSvgAsImage");
     }
     var canvas = document.createElement("canvas");
@@ -21900,6 +21900,113 @@ jsPDF.API.addMetadata = function (metadata, rawXmlOrNamespaceUri) {
 (function (jsPDFAPI) {
 
   /**
+   * A small, valid ICC v4 sRGB destination profile (base64 encoded), bundled so that
+   * PDF/A-3 documents always have a validator-recognizable RGB OutputIntent, even when
+   * the caller does not supply their own ICC profile via options.outputIntent.destOutputProfile.
+   * ISO 19005-3 (clause 6.2.4.3) requires DeviceRGB/DeviceGray content to be backed by either
+   * a device independent Default colour space or a PDF/A OutputIntent containing a real ICC
+   * destination profile; without this fallback, PDF/A-3 output would silently fail validation.
+   * @private
+   */
+  var DEFAULT_SRGB_ICC_PROFILE_BASE64 = "AAACTGxjbXMEQAAAbW50clJHQiBYWVogB+oACQACABQACQAXYWNzcEFQUEwAAAAAAAAAAAAAAAAA" + "AAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1sY21zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" + "AAAAAAAAAAAAAAAAAAAAAAALZGVzYwAAAQgAAAA2Y3BydAAAAUAAAABMd3RwdAAAAYwAAAAUY2hh" + "ZAAAAaAAAAAsclhZWgAAAcwAAAAUYlhZWgAAAeAAAAAUZ1hZWgAAAfQAAAAUclRSQwAAAggAAAAg" + "Z1RSQwAAAggAAAAgYlRSQwAAAggAAAAgY2hybQAAAigAAAAkbWx1YwAAAAAAAAABAAAADGVuVVMA" + "AAAaAAAAHABzAFIARwBCACAAYgB1AGkAbAB0AC0AaQBuAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAA" + "ADAAAAAcAE4AbwAgAGMAbwBwAHkAcgBpAGcAaAB0ACwAIAB1AHMAZQAgAGYAcgBlAGUAbAB5WFla" + "IAAAAAAAAPbWAAEAAAAA0y1zZjMyAAAAAAABDEIAAAXe///zJQAAB5MAAP2Q///7of///aIAAAPc" + "AADAblhZWiAAAAAAAABvoAAAOPUAAAOQWFlaIAAAAAAAACSfAAAPhAAAtsNYWVogAAAAAAAAYpcA" + "ALeHAAAY2XBhcmEAAAAAAAMAAAACZmYAAPKnAAANWQAAE9AAAApbY2hybQAAAAAAAwAAAACj1wAA" + "VHsAAEzNAACZmgAAJmYAAA9c";
+
+  /**
+   * Lazily decoded cache of the bundled default sRGB ICC profile bytes.
+   * @private
+   */
+  var cachedDefaultIccProfileBytes = null;
+
+  /**
+   * Helper: Decode a base64 string into a Uint8Array of raw bytes.
+   * @private
+   */
+  function base64ToUint8Array(base64) {
+    var binaryStr = atob(base64);
+    var bytes = new Uint8Array(binaryStr.length);
+    for (var i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  /**
+   * Helper: Returns the bundled default sRGB ICC destination profile bytes (decoded once, then cached).
+   * @private
+   */
+  function getDefaultIccProfileBytes() {
+    if (!cachedDefaultIccProfileBytes) {
+      cachedDefaultIccProfileBytes = base64ToUint8Array(DEFAULT_SRGB_ICC_PROFILE_BASE64);
+    }
+    return cachedDefaultIccProfileBytes;
+  }
+
+  /**
+   * Helper: Normalize ICC profile input (string / Uint8Array / ArrayBuffer / Array) into a Uint8Array of raw bytes.
+   * Note: unlike binaryToString(), this treats string input as already being raw bytes (0-255 char codes),
+   * which is required to correctly inspect/validate binary ICC profile data supplied as a "binary string".
+   * @private
+   */
+  function toIccProfileBytes(data) {
+    if (data instanceof Uint8Array) {
+      return data;
+    }
+    if (data instanceof ArrayBuffer) {
+      return new Uint8Array(data);
+    }
+    if (Array.isArray(data)) {
+      return new Uint8Array(data);
+    }
+    if (typeof data === "string") {
+      var bytes = new Uint8Array(data.length);
+      for (var i = 0; i < data.length; i++) {
+        bytes[i] = data.charCodeAt(i) & 0xff;
+      }
+      return bytes;
+    }
+    return null;
+  }
+
+  /**
+   * Helper: Read a 4-byte ASCII signature from an ICC profile byte array at the given offset.
+   * @private
+   */
+  function readIccSignature(bytes, offset) {
+    if (!bytes || bytes.length < offset + 4) {
+      return "";
+    }
+    return String.fromCharCode(bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3]);
+  }
+
+  /**
+   * Helper: Validate that the given bytes look like a well-formed ICC profile stream, per the
+   * ICC.1 specification: a profile header is at least 128 bytes and its profile file signature
+   * ('acsp') must appear at byte offset 36.
+   * @private
+   */
+  function isValidIccProfile(bytes) {
+    return Boolean(bytes) && bytes.length >= 132 && readIccSignature(bytes, 36) === "acsp";
+  }
+
+  /**
+   * Helper: Determine the number of colour components (PDF /N entry) for an ICC profile from its
+   * data colour space signature (ICC.1 header bytes 16-19), falling back to 3 (RGB) when unknown.
+   * @private
+   */
+  function detectIccColorComponents(bytes) {
+    var colorSpace = readIccSignature(bytes, 16).trim();
+    switch (colorSpace) {
+      case "GRAY":
+        return 1;
+      case "RGB":
+        return 3;
+      case "CMYK":
+        return 4;
+      default:
+        return 3;
+    }
+  }
+
+  /**
    * Helper: Left-pad number with zero.
    * @private
    */
@@ -22363,21 +22470,39 @@ jsPDF.API.addMetadata = function (metadata, rawXmlOrNamespaceUri) {
         var regName = oi.registryName || "http://www.color.org";
         var subtype = oi.subtype || "GTS_PDFA1";
         var outputCondition = oi.outputCondition || oi.condition;
-        var destProfileRef = "";
+
+        // A validator-recognizable RGB destination profile is required for PDF/A-3 compliant
+        // use of DeviceRGB/DeviceGray content (ISO 19005-3 clause 6.2.4.3). If the caller supplied
+        // an ICC profile, use it (after validating it looks like a real ICC profile); otherwise
+        // (or if it is invalid), fall back to the bundled default sRGB ICC profile so the
+        // OutputIntent is always backed by a real, embedded destination profile.
+        var iccProfileBytes = null;
         if (oi.destOutputProfile) {
-          var iccData = binaryToString(oi.destOutputProfile);
-          var iccObjId = this.internal.newObject();
-          pdfa.iccProfileObjId = iccObjId;
-          this.internal.write("<<");
-          this.internal.write("/N " + (oi.n || 3));
-          this.internal.write("/Length " + iccData.length);
-          this.internal.write(">>");
-          this.internal.write("stream");
-          this.internal.write(iccData);
-          this.internal.write("endstream");
-          this.internal.write("endobj");
-          destProfileRef = " /DestOutputProfile " + iccObjId + " 0 R";
+          iccProfileBytes = toIccProfileBytes(oi.destOutputProfile);
+          if (!isValidIccProfile(iccProfileBytes)) {
+            if (typeof console !== "undefined" && typeof console.warn === "function") {
+              console.warn("jsPDF PDF/A-3: options.outputIntent.destOutputProfile does not look like a " + "valid ICC profile (missing 'acsp' signature). Falling back to the bundled " + "default sRGB ICC profile to keep the PDF/A-3 OutputIntent valid.");
+            }
+            iccProfileBytes = null;
+          }
         }
+        if (!iccProfileBytes) {
+          iccProfileBytes = getDefaultIccProfileBytes();
+        }
+        var destProfileRef = "";
+        var iccData = binaryToString(iccProfileBytes);
+        var iccN = oi.n || detectIccColorComponents(iccProfileBytes);
+        var iccObjId = this.internal.newObject();
+        pdfa.iccProfileObjId = iccObjId;
+        this.internal.write("<<");
+        this.internal.write("/N " + iccN);
+        this.internal.write("/Length " + iccData.length);
+        this.internal.write(">>");
+        this.internal.write("stream");
+        this.internal.write(iccData);
+        this.internal.write("endstream");
+        this.internal.write("endobj");
+        destProfileRef = " /DestOutputProfile " + iccObjId + " 0 R";
         var outputIntentObjId = this.internal.newObject();
         pdfa.outputIntentObjId = outputIntentObjId;
         this.internal.write("<<");
@@ -22502,7 +22627,13 @@ jsPDF.API.addMetadata = function (metadata, rawXmlOrNamespaceUri) {
    * @param {string} [options.outputIntent.info='sRGB IEC61966-2.1'] Human-readable output condition info.
    * @param {string} [options.outputIntent.registryName='http://www.color.org'] Output condition registry name.
    * @param {string} [options.outputIntent.subtype='GTS_PDFA1'] OutputIntent subtype.
-   * @param {Uint8Array|ArrayBuffer|string} [options.outputIntent.destOutputProfile] Optional ICC output profile data.
+   * @param {Uint8Array|ArrayBuffer|string} [options.outputIntent.destOutputProfile] ICC output profile data (raw
+   *   bytes as Uint8Array/ArrayBuffer, or a "binary string" of byte values). If omitted, or if the supplied data
+   *   does not look like a valid ICC profile (missing the 'acsp' signature), a bundled default sRGB ICC profile
+   *   is embedded instead so the PDF/A-3 OutputIntent always references a real destination profile, as required
+   *   by ISO 19005-3 clause 6.2.4.3 for DeviceRGB/DeviceGray content.
+   * @param {number} [options.outputIntent.n] Number of colour components for /N. Auto-detected from the ICC
+   *   profile's data colour space signature when omitted (RGB=3, GRAY=1, CMYK=4).
    * @param {Object} [options.facturx] Factur-X configuration options.
    * @param {Object} [options.zugferd] ZUGFeRD configuration options.
    * @param {Array} [options.schemas] Custom extension schemas.

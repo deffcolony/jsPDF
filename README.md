@@ -118,7 +118,7 @@ doc.addFileAttachment({
 ```
 
 #### Notes on PDF/A-3 Conformance & Validators:
-- **Color Profiles & OutputIntents**: PDF/A requires an OutputIntent. By default, jsPDF includes an sRGB OutputIntent dictionary (`GTS_PDFA1`). You can provide custom ICC profile buffers or custom output condition identifiers via `doc.enablePdfA3({ outputIntent: { ... } })`.
+- **Color Profiles & OutputIntents**: PDF/A requires an OutputIntent. By default, jsPDF includes an sRGB `OutputIntent` dictionary (`GTS_PDFA1`) **with a real, embedded sRGB ICC destination profile (`/DestOutputProfile`)**, so DeviceRGB/DeviceGray content (fills, text, images) already satisfies ISO 19005-3 clause 6.2.4.3 without any extra configuration. You can provide your own ICC profile buffer (`Uint8Array`/`ArrayBuffer`) or custom output condition identifiers via `doc.enablePdfA3({ outputIntent: { destOutputProfile: ..., ... } })`; the number of colour components (`/N`) is auto-detected from the profile's colour space, or can be set explicitly via `outputIntent.n`. If a supplied profile does not look like a valid ICC profile, jsPDF logs a warning and falls back to the bundled default profile so the document remains PDF/A-3 compliant.
 - **Font Embedding**: PDF/A conformance requires all fonts used in the document to be embedded. When generating PDF/A documents with text, use custom TrueType fonts (`doc.addFont()`) to ensure complete font embedding.
 - **XMP Metadata**: jsPDF automatically generates an ISO 19005-3 compliant XMP metadata packet synchronized with document properties (`title`, `author`, `creationDate`, etc.) and registers the `/Metadata` catalog dictionary entry.
 

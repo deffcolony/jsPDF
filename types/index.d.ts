@@ -669,7 +669,18 @@ declare module "jspdf" {
     info?: string;
     outputCondition?: string;
     registryName?: string;
-    destOutputProfile?: any;
+    subtype?: string;
+    /**
+     * ICC destination profile bytes. If omitted, or if the supplied data does not look like a
+     * valid ICC profile, a bundled default sRGB ICC profile is embedded instead so the PDF/A-3
+     * OutputIntent always references a real destination profile.
+     */
+    destOutputProfile?: Uint8Array | ArrayBuffer | string;
+    /**
+     * Number of colour components for /N. Auto-detected from the ICC profile's data colour space
+     * signature when omitted (RGB=3, GRAY=1, CMYK=4).
+     */
+    n?: number;
   }
 
   export interface PdfAPropertySchema {
