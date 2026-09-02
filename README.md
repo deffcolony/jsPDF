@@ -71,6 +71,57 @@ doc.text("Hello world!", 1, 1);
 doc.save("two-by-four.pdf");
 ```
 
+### PDF/A-3 Compliance and Invoicing (UBL XML, Factur-X, ZUGFeRD)
+
+jsPDF supports generating PDF/A-3 compliant documents (PDF/A-3b, PDF/A-3a, PDF/A-3u) with embedded associated files (AF), making it suitable for electronic invoicing standards such as UBL XML, Factur-X, and ZUGFeRD.
+
+```javascript
+import { jsPDF } from "jspdf";
+
+const doc = new jsPDF({
+  pdfa: true, // enables PDF/A-3b mode (or pass { conformance: 'B', title: 'Invoice' })
+  unit: "mm",
+  format: "a4"
+});
+
+// Add invoice content
+doc.text("INVOICE #INV-2026-001", 20, 20);
+doc.text("Total: $1,250.00", 20, 30);
+
+// Attach UBL XML invoice
+const ublXmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+  <ID>INV-2026-001</ID>
+  <IssueDate>2026-03-15</IssueDate>
+</Invoice>`;
+
+doc.attachUblXml(ublXmlContent, {
+  filename: "ubl-invoice.xml",
+  description: "UBL 2.1 Electronic Invoice"
+});
+
+doc.save("invoice-pdfa3.pdf");
+```
+
+#### Attaching Arbitrary Associated Files (PDF/A-3)
+
+You can attach any associated file with customized `/AFRelationship` metadata (e.g. `Alternative`, `Data`, `Source`, `Supplement`, `Unspecified`):
+
+```javascript
+doc.addFileAttachment({
+  filename: "order-data.json",
+  content: JSON.stringify({ orderId: 1001, items: [...] }),
+  mimeType: "application/json",
+  description: "Order payload",
+  relationship: "Data"
+});
+```
+
+#### Notes on PDF/A-3 Conformance & Validators:
+- **Color Profiles & OutputIntents**: PDF/A requires an OutputIntent. By default, jsPDF includes an sRGB OutputIntent dictionary (`GTS_PDFA1`). You can provide custom ICC profile buffers or custom output condition identifiers via `doc.enablePdfA3({ outputIntent: { ... } })`.
+- **Font Embedding**: PDF/A conformance requires all fonts used in the document to be embedded. When generating PDF/A documents with text, use custom TrueType fonts (`doc.addFont()`) to ensure complete font embedding.
+- **XMP Metadata**: jsPDF automatically generates an ISO 19005-3 compliant XMP metadata packet synchronized with document properties (`title`, `author`, `creationDate`, etc.) and registers the `/Metadata` catalog dictionary entry.
+
 ### Running in Node.js
 
 ```javascript
