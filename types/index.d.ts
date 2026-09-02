@@ -650,6 +650,72 @@ declare module "jspdf" {
     putOnlyUsedFonts?: boolean;
     hotfixes?: string[];
     floatPrecision?: number | "smart";
+    pdfVersion?: "1.3" | "1.4" | "1.5" | "1.6" | "1.7" | "2.0" | string;
+    pdfa?: boolean | PdfAOptions;
+  }
+
+  export type PdfAConformance = "a" | "b" | "u" | "A" | "B" | "U";
+  export type PdfAPart = 1 | 2 | 3 | "1" | "2" | "3";
+  export type AFRelationship =
+    | "Source"
+    | "Data"
+    | "Alternative"
+    | "Supplement"
+    | "Unspecified"
+    | string;
+
+  export interface OutputIntentOptions {
+    outputConditionIdentifier?: string;
+    info?: string;
+    outputCondition?: string;
+    registryName?: string;
+    destOutputProfile?: any;
+  }
+
+  export interface PdfAPropertySchema {
+    name: string;
+    valueType: string;
+    description: string;
+    category: string;
+  }
+
+  export interface PdfAExtensionSchema {
+    name: string;
+    namespaceDescription: string;
+    prefix: string;
+    properties: PdfAPropertySchema[];
+  }
+
+  export interface PdfAOptions {
+    version?: PdfAPart;
+    part?: PdfAPart;
+    conformance?: PdfAConformance;
+    outputIntent?: OutputIntentOptions;
+    rawXmp?: string;
+    schemas?: PdfAExtensionSchema[];
+    metadata?: { [key: string]: string };
+  }
+
+  export interface FileAttachmentOptions {
+    filename: string;
+    content: string | Uint8Array | ArrayBuffer;
+    mimeType?: string;
+    relationship?: AFRelationship;
+    description?: string;
+    creationDate?: Date | string;
+    modDate?: Date | string;
+  }
+
+  export interface InvoiceXmlOptions {
+    filename?: string;
+    xmlContent?: string | Uint8Array | ArrayBuffer;
+    content?: string | Uint8Array | ArrayBuffer;
+    mimeType?: string;
+    relationship?: AFRelationship;
+    description?: string;
+    creationDate?: Date | string;
+    modDate?: Date | string;
+    pdfaOptions?: PdfAOptions;
   }
 
   export interface Point {
@@ -685,6 +751,8 @@ declare module "jspdf" {
     author?: string;
     keywords?: string;
     creator?: string;
+    creationDate?: Date | string;
+    modDate?: Date | string;
   }
 
   export interface PatternData {
@@ -1345,6 +1413,23 @@ declare module "jspdf" {
      * WARNING: Passing raw XML is potentially insecure! Always sanitize user input before passing it to this function!
      */
     addMetadata(metadata: string, rawXml?: boolean): jsPDF;
+
+    // jsPDF PDF version methods
+    setPdfVersion(version: string): jsPDF;
+    getPdfVersion(): string;
+
+    // jsPDF plugin: pdfa (PDF/A-3 and Associated Files)
+    enablePdfA3(options?: PdfAOptions): jsPDF;
+    setPdfA3(options?: PdfAOptions): jsPDF;
+    setPdfA(options?: boolean | PdfAOptions): jsPDF;
+    isPdfA3Enabled(): boolean;
+    getPdfA3Options(): PdfAOptions | false;
+    addFileAttachment(options: FileAttachmentOptions): jsPDF;
+    attachFile(options: FileAttachmentOptions): jsPDF;
+    embedFile(options: FileAttachmentOptions): jsPDF;
+    getFileAttachments(): FileAttachmentOptions[];
+    attachUblXml(options: InvoiceXmlOptions | string): jsPDF;
+    attachInvoiceXml(options: InvoiceXmlOptions | string): jsPDF;
 
     Matrix(
       a: number,

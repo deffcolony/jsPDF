@@ -28,6 +28,7 @@ import "./modules/svg.js";
 import "./modules/total_pages.js";
 import "./modules/viewerpreferences.js";
 import "./modules/xmp_metadata.js";
+import "./modules/pdfa.js";
 import "./modules/utf8.js";
 import "./modules/vfs.js";
 

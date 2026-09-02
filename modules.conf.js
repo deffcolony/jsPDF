@@ -266,6 +266,13 @@ var configuration = {
     deps: ["jspdf"]
   },
 
+  pdfa: {
+    name: "PDF/A-3 and Associated Files Plugin",
+    folder: "modules",
+    description: "Adds PDF/A-3 compliance and embedded associated file attachments (including UBL XML invoices)",
+    deps: ["jspdf"]
+  },
+
   FileSaver: {
     name: "FileSaver",
     folder: "libs",

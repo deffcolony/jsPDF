@@ -668,3 +668,64 @@ function test_addImageWithRGBAData() {
     compression: "FAST"
   });
 }
+
+function test_pdfa_and_attachments() {
+  const doc = new jsPDF({
+    pdfVersion: "1.7",
+    pdfa: {
+      version: 3,
+      conformance: "B",
+      outputIntent: {
+        outputConditionIdentifier: "sRGB IEC61966-2.1",
+        info: "sRGB IEC61966-2.1"
+      }
+    }
+  });
+
+  doc.setPdfVersion("1.7");
+  const version: string = doc.getPdfVersion();
+
+  doc.enablePdfA3({
+    conformance: "B"
+  });
+  doc.setPdfA3();
+  doc.setPdfA(true);
+  const isEnabled: boolean = doc.isPdfA3Enabled();
+  const options = doc.getPdfA3Options();
+
+  doc.addFileAttachment({
+    filename: "invoice.xml",
+    content: "<Invoice></Invoice>",
+    mimeType: "application/xml",
+    relationship: "Alternative",
+    description: "UBL Invoice XML"
+  });
+
+  doc.attachFile({
+    filename: "data.csv",
+    content: new Uint8Array([1, 2, 3]),
+    mimeType: "text/csv",
+    relationship: "Data"
+  });
+
+  doc.embedFile({
+    filename: "extra.txt",
+    content: "extra content"
+  });
+
+  const attachments = doc.getFileAttachments();
+
+  doc.attachUblXml("<Invoice></Invoice>");
+  doc.attachInvoiceXml({
+    filename: "factur-x.xml",
+    xmlContent: "<Invoice></Invoice>",
+    description: "Factur-X Invoice"
+  });
+
+  doc.setDocumentProperties({
+    title: "Invoice 123",
+    creationDate: new Date(),
+    modDate: new Date()
+  });
+}
+

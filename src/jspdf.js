@@ -259,6 +259,9 @@ function jsPDF(options) {
   API.__private__.PubSub = PubSub;
 
   var pdfVersion = "1.3";
+  if (typeof options.pdfVersion === "string" && options.pdfVersion.length > 0) {
+    pdfVersion = options.pdfVersion;
+  }
   var getPdfVersion = (API.__private__.getPdfVersion = function() {
     return pdfVersion;
   });
@@ -266,6 +269,9 @@ function jsPDF(options) {
   API.__private__.setPdfVersion = function(value) {
     pdfVersion = value;
   };
+
+  API.setPdfVersion = API.setPDFVersion = API.__private__.setPdfVersion;
+  API.getPdfVersion = API.getPDFVersion = API.__private__.getPdfVersion;
 
   // Size in pt of various paper formats
   var pageFormats = {
@@ -721,6 +727,47 @@ function jsPDF(options) {
     return getCreationDate(type);
   };
 
+  var modDate;
+
+  var setModDate = (API.__private__.setModDate = API.__private__.setModificationDate = function(
+    date
+  ) {
+    var tmpModDateString;
+    var regexPDFModDate = /^D:(20[0-2][0-9]|203[0-7]|19[7-9][0-9])(0[0-9]|1[0-2])([0-2][0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])(0[0-9]|[1-5][0-9])(0[0-9]|[1-5][0-9])(\+0[0-9]|\+1[0-4]|-0[0-9]|-1[0-1])'(0[0-9]|[1-5][0-9])'?$/;
+    if (typeof date === "undefined") {
+      date = new Date();
+    }
+
+    if (date instanceof Date) {
+      tmpModDateString = convertDateToPDFDate(date);
+    } else if (regexPDFModDate.test(date)) {
+      tmpModDateString = date;
+    } else {
+      throw new Error("Invalid argument passed to jsPDF.setModDate");
+    }
+    modDate = tmpModDateString;
+    return modDate;
+  });
+
+  var getModDate = (API.__private__.getModDate = API.__private__.getModificationDate = function(
+    type
+  ) {
+    var result = modDate;
+    if (type === "jsDate" && modDate) {
+      result = convertPDFDateToDate(modDate);
+    }
+    return result;
+  });
+
+  API.setModDate = API.setModificationDate = function(date) {
+    setModDate(date);
+    return this;
+  };
+
+  API.getModDate = API.getModificationDate = function(type) {
+    return getModDate(type);
+  };
+
   var padd2 = (API.__private__.padd2 = function(number) {
     return ("0" + parseInt(number)).slice(-2);
   });
@@ -1032,11 +1079,23 @@ function jsPDF(options) {
   API.__private__.setDocumentProperties = API.setProperties = API.setDocumentProperties = function(
     properties
   ) {
+    if (!properties || typeof properties !== "object") {
+      return this;
+    }
     // copying only those properties we can render.
     for (var property in documentProperties) {
       if (documentProperties.hasOwnProperty(property) && properties[property]) {
         documentProperties[property] = properties[property];
       }
+    }
+    if (properties.modDate) {
+      setModDate(properties.modDate);
+    }
+    if (properties.modificationDate) {
+      setModDate(properties.modificationDate);
+    }
+    if (properties.creationDate) {
+      setCreationDate(properties.creationDate);
     }
     return this;
   };
@@ -2868,6 +2927,9 @@ function jsPDF(options) {
             ")"
         );
       }
+    }
+    if (modDate) {
+      out("/ModDate (" + pdfEscape(encryptor(modDate)) + ")");
     }
     out("/CreationDate (" + pdfEscape(encryptor(creationDate)) + ")");
     out(">>");
@@ -6102,6 +6164,20 @@ function jsPDF(options) {
     getPageInfoByObjId: getPageInfoByObjId,
     getCurrentPageInfo: getCurrentPageInfo,
     getPDFVersion: getPdfVersion,
+    getPdfVersion: getPdfVersion,
+    setPDFVersion: API.__private__.setPdfVersion,
+    setPdfVersion: API.__private__.setPdfVersion,
+    getCreationDate: API.__private__.getCreationDate,
+    setCreationDate: API.__private__.setCreationDate,
+    getModDate: API.__private__.getModDate,
+    setModDate: API.__private__.setModDate,
+    getModificationDate: API.__private__.getModificationDate,
+    setModificationDate: API.__private__.setModificationDate,
+    getDocumentProperties: API.__private__.getDocumentProperties,
+    setDocumentProperties: API.__private__.setDocumentProperties,
+    convertDateToPDFDate: convertDateToPDFDate,
+    convertPDFDateToDate: convertPDFDateToDate,
+    options: options,
     Point: Point,
     Rectangle: Rectangle,
     Matrix: Matrix,
@@ -6137,7 +6213,7 @@ function jsPDF(options) {
   activeFontKey = "F1";
   _addPage(format, orientation);
 
-  events.publish("initialized");
+  events.publish("initialized", options);
   return API;
 }
 
