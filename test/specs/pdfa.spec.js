@@ -75,6 +75,75 @@ describe("Module: PDF/A-3 and Associated Files", () => {
     expect(output).toContain("/OutputCondition (sRGB)");
   });
 
+  it("should embed a bundled default sRGB ICC destination profile when none is supplied, to remain PDF/A-3 validator compliant for DeviceRGB/DeviceGray", () => {
+    const doc = new jsPDF({ pdfa: true });
+    doc.setFillColor(255, 0, 0);
+    doc.rect(10, 10, 20, 20, "F");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Invoice", 10, 40);
+
+    const output = doc.output();
+    // A real destination profile stream must always be referenced and embedded,
+    // per ISO 19005-3 clause 6.2.4.3, even if the caller did not provide one.
+    expect(output).toContain("/DestOutputProfile");
+    expect(output).toContain("/N 3");
+    expect(output).toMatch(/\/N 3\s*\/Length \d+/);
+  });
+
+  it("should honor a valid caller-supplied ICC destOutputProfile and auto-detect /N from its colour space", () => {
+    const doc = new jsPDF();
+    // Minimal well-formed ICC profile header stub with a GRAY data colour space signature
+    // at byte offset 16 and the required 'acsp' file signature at byte offset 36.
+    const iccBytes = new Uint8Array(132);
+    "GRAY".split("").forEach((ch, i) => (iccBytes[16 + i] = ch.charCodeAt(0)));
+    "acsp".split("").forEach((ch, i) => (iccBytes[36 + i] = ch.charCodeAt(0)));
+
+    doc.enablePdfA3({
+      outputIntent: {
+        destOutputProfile: iccBytes
+      }
+    });
+
+    const output = doc.output();
+    expect(output).toContain("/DestOutputProfile");
+    expect(output).toContain("/N 1");
+    expect(output).toContain("/Length " + iccBytes.length);
+  });
+
+  it("should fall back to the bundled default ICC profile when the supplied destOutputProfile is not a valid ICC profile", () => {
+    const doc = new jsPDF();
+    const invalidIccBytes = new Uint8Array(200).fill(1); // no 'acsp' signature present
+
+    doc.enablePdfA3({
+      outputIntent: {
+        destOutputProfile: invalidIccBytes
+      }
+    });
+
+    const output = doc.output();
+    // Should still embed a valid destination profile (the bundled default), not the garbage bytes.
+    expect(output).toContain("/DestOutputProfile");
+    expect(output).toContain("/N 3");
+    expect(output).not.toContain("/Length 200");
+  });
+
+  it("should let the caller explicitly override /N for the destination profile", () => {
+    const doc = new jsPDF();
+    const iccBytes = new Uint8Array(132);
+    "CMYK".split("").forEach((ch, i) => (iccBytes[16 + i] = ch.charCodeAt(0)));
+    "acsp".split("").forEach((ch, i) => (iccBytes[36 + i] = ch.charCodeAt(0)));
+
+    doc.enablePdfA3({
+      outputIntent: {
+        destOutputProfile: iccBytes,
+        n: 4
+      }
+    });
+
+    const output = doc.output();
+    expect(output).toContain("/N 4");
+  });
+
   it("should attach arbitrary string files with AFRelationship, Filespec, and Names tree", () => {
     const doc = new jsPDF({ pdfa: true });
     const content = '{"sample": "data", "id": 100}';

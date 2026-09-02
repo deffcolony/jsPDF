@@ -7,6 +7,7 @@
  */
 
 import { jsPDF } from "../jspdf.js";
+import { atob } from "../libs/AtobBtoa.js";
 
 /**
  * PDF/A-3 and Associated Files plugin for jsPDF.
@@ -17,6 +18,131 @@ import { jsPDF } from "../jspdf.js";
  */
 (function(jsPDFAPI) {
   "use strict";
+
+  /**
+   * A small, valid ICC v4 sRGB destination profile (base64 encoded), bundled so that
+   * PDF/A-3 documents always have a validator-recognizable RGB OutputIntent, even when
+   * the caller does not supply their own ICC profile via options.outputIntent.destOutputProfile.
+   * ISO 19005-3 (clause 6.2.4.3) requires DeviceRGB/DeviceGray content to be backed by either
+   * a device independent Default colour space or a PDF/A OutputIntent containing a real ICC
+   * destination profile; without this fallback, PDF/A-3 output would silently fail validation.
+   * @private
+   */
+  var DEFAULT_SRGB_ICC_PROFILE_BASE64 =
+    "AAACTGxjbXMEQAAAbW50clJHQiBYWVogB+oACQACABQACQAXYWNzcEFQUEwAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1sY21zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAALZGVzYwAAAQgAAAA2Y3BydAAAAUAAAABMd3RwdAAAAYwAAAAUY2hh" +
+    "ZAAAAaAAAAAsclhZWgAAAcwAAAAUYlhZWgAAAeAAAAAUZ1hZWgAAAfQAAAAUclRSQwAAAggAAAAg" +
+    "Z1RSQwAAAggAAAAgYlRSQwAAAggAAAAgY2hybQAAAigAAAAkbWx1YwAAAAAAAAABAAAADGVuVVMA" +
+    "AAAaAAAAHABzAFIARwBCACAAYgB1AGkAbAB0AC0AaQBuAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAA" +
+    "ADAAAAAcAE4AbwAgAGMAbwBwAHkAcgBpAGcAaAB0ACwAIAB1AHMAZQAgAGYAcgBlAGUAbAB5WFla" +
+    "IAAAAAAAAPbWAAEAAAAA0y1zZjMyAAAAAAABDEIAAAXe///zJQAAB5MAAP2Q///7of///aIAAAPc" +
+    "AADAblhZWiAAAAAAAABvoAAAOPUAAAOQWFlaIAAAAAAAACSfAAAPhAAAtsNYWVogAAAAAAAAYpcA" +
+    "ALeHAAAY2XBhcmEAAAAAAAMAAAACZmYAAPKnAAANWQAAE9AAAApbY2hybQAAAAAAAwAAAACj1wAA" +
+    "VHsAAEzNAACZmgAAJmYAAA9c";
+
+  /**
+   * Lazily decoded cache of the bundled default sRGB ICC profile bytes.
+   * @private
+   */
+  var cachedDefaultIccProfileBytes = null;
+
+  /**
+   * Helper: Decode a base64 string into a Uint8Array of raw bytes.
+   * @private
+   */
+  function base64ToUint8Array(base64) {
+    var binaryStr = atob(base64);
+    var bytes = new Uint8Array(binaryStr.length);
+    for (var i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  /**
+   * Helper: Returns the bundled default sRGB ICC destination profile bytes (decoded once, then cached).
+   * @private
+   */
+  function getDefaultIccProfileBytes() {
+    if (!cachedDefaultIccProfileBytes) {
+      cachedDefaultIccProfileBytes = base64ToUint8Array(
+        DEFAULT_SRGB_ICC_PROFILE_BASE64
+      );
+    }
+    return cachedDefaultIccProfileBytes;
+  }
+
+  /**
+   * Helper: Normalize ICC profile input (string / Uint8Array / ArrayBuffer / Array) into a Uint8Array of raw bytes.
+   * Note: unlike binaryToString(), this treats string input as already being raw bytes (0-255 char codes),
+   * which is required to correctly inspect/validate binary ICC profile data supplied as a "binary string".
+   * @private
+   */
+  function toIccProfileBytes(data) {
+    if (data instanceof Uint8Array) {
+      return data;
+    }
+    if (data instanceof ArrayBuffer) {
+      return new Uint8Array(data);
+    }
+    if (Array.isArray(data)) {
+      return new Uint8Array(data);
+    }
+    if (typeof data === "string") {
+      var bytes = new Uint8Array(data.length);
+      for (var i = 0; i < data.length; i++) {
+        bytes[i] = data.charCodeAt(i) & 0xff;
+      }
+      return bytes;
+    }
+    return null;
+  }
+
+  /**
+   * Helper: Read a 4-byte ASCII signature from an ICC profile byte array at the given offset.
+   * @private
+   */
+  function readIccSignature(bytes, offset) {
+    if (!bytes || bytes.length < offset + 4) {
+      return "";
+    }
+    return String.fromCharCode(
+      bytes[offset],
+      bytes[offset + 1],
+      bytes[offset + 2],
+      bytes[offset + 3]
+    );
+  }
+
+  /**
+   * Helper: Validate that the given bytes look like a well-formed ICC profile stream, per the
+   * ICC.1 specification: a profile header is at least 128 bytes and its profile file signature
+   * ('acsp') must appear at byte offset 36.
+   * @private
+   */
+  function isValidIccProfile(bytes) {
+    return Boolean(bytes) && bytes.length >= 132 && readIccSignature(bytes, 36) === "acsp";
+  }
+
+  /**
+   * Helper: Determine the number of colour components (PDF /N entry) for an ICC profile from its
+   * data colour space signature (ICC.1 header bytes 16-19), falling back to 3 (RGB) when unknown.
+   * @private
+   */
+  function detectIccColorComponents(bytes) {
+    var colorSpace = readIccSignature(bytes, 16).trim();
+    switch (colorSpace) {
+      case "GRAY":
+        return 1;
+      case "RGB":
+        return 3;
+      case "CMYK":
+        return 4;
+      default:
+        return 3;
+    }
+  }
 
   /**
    * Helper: Left-pad number with zero.
@@ -549,21 +675,46 @@ import { jsPDF } from "../jspdf.js";
         var subtype = oi.subtype || "GTS_PDFA1";
         var outputCondition = oi.outputCondition || oi.condition;
 
-        var destProfileRef = "";
+        // A validator-recognizable RGB destination profile is required for PDF/A-3 compliant
+        // use of DeviceRGB/DeviceGray content (ISO 19005-3 clause 6.2.4.3). If the caller supplied
+        // an ICC profile, use it (after validating it looks like a real ICC profile); otherwise
+        // (or if it is invalid), fall back to the bundled default sRGB ICC profile so the
+        // OutputIntent is always backed by a real, embedded destination profile.
+        var iccProfileBytes = null;
         if (oi.destOutputProfile) {
-          var iccData = binaryToString(oi.destOutputProfile);
-          var iccObjId = this.internal.newObject();
-          pdfa.iccProfileObjId = iccObjId;
-          this.internal.write("<<");
-          this.internal.write("/N " + (oi.n || 3));
-          this.internal.write("/Length " + iccData.length);
-          this.internal.write(">>");
-          this.internal.write("stream");
-          this.internal.write(iccData);
-          this.internal.write("endstream");
-          this.internal.write("endobj");
-          destProfileRef = " /DestOutputProfile " + iccObjId + " 0 R";
+          iccProfileBytes = toIccProfileBytes(oi.destOutputProfile);
+          if (!isValidIccProfile(iccProfileBytes)) {
+            if (
+              typeof console !== "undefined" &&
+              typeof console.warn === "function"
+            ) {
+              console.warn(
+                "jsPDF PDF/A-3: options.outputIntent.destOutputProfile does not look like a " +
+                  "valid ICC profile (missing 'acsp' signature). Falling back to the bundled " +
+                  "default sRGB ICC profile to keep the PDF/A-3 OutputIntent valid."
+              );
+            }
+            iccProfileBytes = null;
+          }
         }
+        if (!iccProfileBytes) {
+          iccProfileBytes = getDefaultIccProfileBytes();
+        }
+
+        var destProfileRef = "";
+        var iccData = binaryToString(iccProfileBytes);
+        var iccN = oi.n || detectIccColorComponents(iccProfileBytes);
+        var iccObjId = this.internal.newObject();
+        pdfa.iccProfileObjId = iccObjId;
+        this.internal.write("<<");
+        this.internal.write("/N " + iccN);
+        this.internal.write("/Length " + iccData.length);
+        this.internal.write(">>");
+        this.internal.write("stream");
+        this.internal.write(iccData);
+        this.internal.write("endstream");
+        this.internal.write("endobj");
+        destProfileRef = " /DestOutputProfile " + iccObjId + " 0 R";
 
         var outputIntentObjId = this.internal.newObject();
         pdfa.outputIntentObjId = outputIntentObjId;
@@ -728,7 +879,13 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} [options.outputIntent.info='sRGB IEC61966-2.1'] Human-readable output condition info.
    * @param {string} [options.outputIntent.registryName='http://www.color.org'] Output condition registry name.
    * @param {string} [options.outputIntent.subtype='GTS_PDFA1'] OutputIntent subtype.
-   * @param {Uint8Array|ArrayBuffer|string} [options.outputIntent.destOutputProfile] Optional ICC output profile data.
+   * @param {Uint8Array|ArrayBuffer|string} [options.outputIntent.destOutputProfile] ICC output profile data (raw
+   *   bytes as Uint8Array/ArrayBuffer, or a "binary string" of byte values). If omitted, or if the supplied data
+   *   does not look like a valid ICC profile (missing the 'acsp' signature), a bundled default sRGB ICC profile
+   *   is embedded instead so the PDF/A-3 OutputIntent always references a real destination profile, as required
+   *   by ISO 19005-3 clause 6.2.4.3 for DeviceRGB/DeviceGray content.
+   * @param {number} [options.outputIntent.n] Number of colour components for /N. Auto-detected from the ICC
+   *   profile's data colour space signature when omitted (RGB=3, GRAY=1, CMYK=4).
    * @param {Object} [options.facturx] Factur-X configuration options.
    * @param {Object} [options.zugferd] ZUGFeRD configuration options.
    * @param {Array} [options.schemas] Custom extension schemas.
